@@ -1,0 +1,44 @@
+{
+  "projects": [
+    {
+      "name": "Docs Refresh",
+      "owner": "Mona",
+      "status": "Active",
+      "recentActivity": "Merged navigation cleanup 2 days ago",
+      "priority": "High",
+      "summary": "Rewriting contributor guides for first-time contributors."
+    },
+    {
+      "name": "Release Readiness",
+      "owner": "Avery",
+      "status": "At Risk",
+      "recentActivity": "Waiting on final API compatibility results",
+      "priority": "High",
+      "summary": "Coordinating the checks required for the next product release."
+    },
+    {
+      "name": "Search Reliability",
+      "owner": "Jordan",
+      "status": "Blocked",
+      "recentActivity": "Investigating an upstream indexing outage",
+      "priority": "Medium",
+      "summary": "Improving search availability and recovery behavior."
+    },
+    {
+      "name": "Onboarding Toolkit",
+      "owner": "Sam",
+      "status": "Completed",
+      "recentActivity": "Published the updated setup walkthrough this week",
+      "priority": "Low",
+      "summary": "Helping new contributors get a local development environment running."
+    },
+    {
+      "name": "Accessibility Audit",
+      "owner": "Riley",
+      "status": "Active",
+      "recentActivity": "Completed keyboard testing for the account flow",
+      "priority": "Medium",
+      "summary": "Reviewing key workflows for accessible interaction and content."
+    }
+  ]
+}

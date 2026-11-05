@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard-header">
+        <h1>Project Pulse</h1>
+        <p>Current status, ownership, and recent activity across the team.</p>
+      </header>
+      <p class="dashboard-summary" id="dashboard-summary"></p>
+      <p class="dashboard-message" id="dashboard-message" role="status" aria-live="polite">Loading projects...</p>
+      <section class="project-grid" id="project-grid" aria-label="Projects"></section>
+    </main>
+
+    <script>
+      const message = document.getElementById("dashboard-message");
+      const summary = document.getElementById("dashboard-summary");
+      const projectGrid = document.getElementById("project-grid");
+      const statusModifiers = {
+        "Active": "status-badge--active",
+        "At Risk": "status-badge--at-risk",
+        "Blocked": "status-badge--blocked",
+        "Completed": "status-badge--completed"
+      };
+      const priorityModifiers = {
+        "High": "priority-badge--high",
+        "Medium": "priority-badge--medium",
+        "Low": "priority-badge--low"
+      };
+
+      function readText(project, field) {
+        return typeof project[field] === "string" && project[field].trim()
+          ? project[field]
+          : "Not provided";
+      }
+
+      function createBadge(label, value, baseClass, modifiers) {
+        const badge = document.createElement("span");
+        const modifier = Object.prototype.hasOwnProperty.call(modifiers, value)
+          ? modifiers[value]
+          : "badge--unknown";
+        badge.classList.add(baseClass, modifier);
+        badge.textContent = value;
+        badge.setAttribute("aria-label", label + ": " + value);
+        return badge;
+      }
+
+      function createProjectCard(project) {
+        const record = project && typeof project === "object" ? project : {};
+        const card = document.createElement("article");
+        card.classList.add("project-card");
+
+        const name = document.createElement("h2");
+        name.classList.add("project-card__name");
+        name.textContent = readText(record, "name");
+
+        const badges = document.createElement("div");
+        badges.classList.add("project-card__badges");
+        badges.append(
+          createBadge("Status", readText(record, "status"), "status-badge", statusModifiers),
+          createBadge("Priority", readText(record, "priority"), "priority-badge", priorityModifiers)
+        );
+
+        const owner = document.createElement("p");
+        owner.classList.add("project-card__owner");
+        owner.textContent = "Owner: " + readText(record, "owner");
+
+        const projectSummary = document.createElement("p");
+        projectSummary.classList.add("project-card__summary");
+        projectSummary.textContent = readText(record, "summary");
+
+        const activity = document.createElement("p");
+        activity.classList.add("project-card__activity");
+        activity.textContent = "Recent activity: " + readText(record, "recentActivity");
+
+        card.append(name, badges, owner, projectSummary, activity);
+        return card;
+      }
+
+      function renderSummary(projects) {
+        const counts = projects.reduce((totals, project) => {
+          const status = readText(project && typeof project === "object" ? project : {}, "status");
+          totals[status] = (totals[status] || 0) + 1;
+          return totals;
+        }, {});
+        summary.textContent = projects.length + " projects | " +
+          (counts.Active || 0) + " active | " +
+          (counts["At Risk"] || 0) + " at risk | " +
+          (counts.Blocked || 0) + " blocked | " +
+          (counts.Completed || 0) + " completed";
+      }
+
+      async function loadProjects() {
+        if (window.location.protocol === "file:") {
+          throw new Error("Run the 'Run Project Pulse Dashboard' launch configuration to load project data.");
+        }
+
+        const response = await fetch("project-data.json");
+        if (!response.ok) {
+          throw new Error("Project data request failed with status " + response.status + ".");
+        }
+
+        const data = await response.json();
+        if (!data || !Array.isArray(data.projects) || data.projects.length === 0) {
+          message.textContent = "No projects are available yet.";
+          return;
+        }
+
+        renderSummary(data.projects);
+        const cards = data.projects.map(createProjectCard);
+        projectGrid.replaceChildren(...cards);
+        message.textContent = "Loaded " + data.projects.length + " projects.";
+      }
+
+      loadProjects().catch((error) => {
+        message.textContent = error.message.includes("Run the 'Run Project Pulse Dashboard'")
+          ? error.message
+          : "Unable to load project data. Check that project-data.json exists and contains valid JSON.";
+      });
+    </script>
+  </body>
+</html>
